@@ -28,50 +28,51 @@ fun ScriptEditor(viewModel: ScriptViewModel) {
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         // Edytor kodu
-        BasicTextField(
-            value = textFieldValue,
-            onValueChange = { newValue ->
-                textFieldValue = newValue
-                viewModel.updateScript(newValue.text)
-            },
-            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 16.sp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-                .background(Color.LightGray),
-            decorationBox = { innerTextField ->
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    // Build an annotated string for the text field with highlighting
-                    val highlightedText = viewModel.highlightSyntax()
-                    val annotatedString = buildAnnotatedString {
-                        highlightedText.forEach { (word, isKeyword) ->
-                            if (isKeyword) {
-                                withStyle(style = SpanStyle(color = Color.Blue)) {
-                                    append(word)
-                                }
-                            } else {
-                                append(word)
-                            }
-                        }
-                    }
-
-                    // Draw the highlighted text
-                    innerTextField()
-                    if (textFieldValue.text.isNotEmpty()) {
-                        // Display the text with syntax highlighting
-                        BasicTextField(
-                            value = textFieldValue.copy(annotatedString = annotatedString),
-                            onValueChange = { newValue ->
-                                textFieldValue = newValue
-                                viewModel.updateScript(newValue.text)
-                            },
-                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 16.sp),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-            }
-        )
+//        BasicTextField(
+//            value = textFieldValue,
+//            onValueChange = { newValue ->
+//                textFieldValue = newValue
+//                viewModel.updateScript(newValue.text)
+//            },
+//            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 16.sp),
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(16.dp)
+//                .background(Color.LightGray),
+//            decorationBox = { innerTextField ->
+//                Box(modifier = Modifier.fillMaxWidth()) {
+//                    // Build an annotated string for the text field with highlighting
+//                    val highlightedText = viewModel.highlightSyntax()
+//                    val annotatedString = buildAnnotatedString {
+//                        highlightedText.forEach { (word, isKeyword) ->
+//                            if (isKeyword) {
+//                                withStyle(style = SpanStyle(color = Color.Blue)) {
+//                                    append(word)
+//                                }
+//                            } else {
+//                                append(word)
+//                            }
+//                        }
+//                    }
+//
+//                    // Draw the highlighted text
+//                    innerTextField()
+//                    if (textFieldValue.text.isNotEmpty()) {
+//                        // Display the text with syntax highlighting
+//                        BasicTextField(
+//                            value = textFieldValue.copy(annotatedString = annotatedString),
+//                            onValueChange = { newValue ->
+//                                textFieldValue = newValue
+//                                viewModel.updateScript(newValue.text)
+//                            },
+//                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 16.sp),
+//                            modifier = Modifier.fillMaxWidth()
+//                        )
+//                    }
+//                }
+//            }
+//        )
+        CodeEditorWithLineNumbers(viewModel = viewModel)
 
         Spacer(modifier = Modifier.height(16.dp))
 

@@ -54,7 +54,9 @@ class ScriptViewModel : ViewModel() {
 
         viewModelScope.launch(Dispatchers.IO) {  // }
 //        CoroutineScope(Dispatchers.IO).launch {
-            val tempFile = File.createTempFile("tempScript", ".kts")
+            //val tempFile = File.createTempFile("tempScript", ".kts")
+            val tempFile = File("foo.kts")
+            tempFile.createNewFile()
             tempFile.writeText(scriptContent)
 
             try {

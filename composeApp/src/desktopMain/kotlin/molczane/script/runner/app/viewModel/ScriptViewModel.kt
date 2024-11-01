@@ -1,5 +1,6 @@
 package molczane.script.runner.app.viewModel
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,11 +9,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import molczane.script.runner.app.model.ErrorData
 import molczane.script.runner.app.model.ScriptState
 import java.io.File
 import java.io.InputStreamReader
 
 class ScriptViewModel : ViewModel() {
+    val errorList = mutableStateListOf<ErrorData>()
     var scriptState = mutableStateOf(ScriptState())
     var outputState = mutableStateOf("Output will appear here...")
     var isRunning = mutableStateOf(false)
@@ -31,6 +34,7 @@ class ScriptViewModel : ViewModel() {
     )
 
     private val keywordRegex = Regex("\\b(${keywords.joinToString("|")})\\b")
+    private val errorPattern = Regex("""(\w+\.kts):(\d+):(\d+):\s+error:\s+(.+)""")
 
     fun updateScript(text: String) {
         scriptState.value = scriptState.value.copy(scriptText = text)
@@ -51,9 +55,10 @@ class ScriptViewModel : ViewModel() {
         val scriptContent = scriptState.value.scriptText
         isRunning.value = true
         outputState.value = ""
+        errorList.clear() // List to store parsed errors
 
-        viewModelScope.launch(Dispatchers.IO) {  // }
-//        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch(Dispatchers.IO) {
+
             //val tempFile = File.createTempFile("tempScript", ".kts")
             val tempFile = File("foo.kts")
             tempFile.createNewFile()
@@ -79,6 +84,19 @@ class ScriptViewModel : ViewModel() {
                         errorReader.lineSequence().forEach { line ->
                             withContext(Dispatchers.Main) {
                                 outputState.value += "$line\n"
+
+                                // Parse error output and store line/column
+                                val matchResult = errorPattern.find(line)
+                                if (matchResult != null) {
+                                    val (file, lineNumber, columnNumber, message) = matchResult.destructured
+                                    errorList.add(
+                                        ErrorData(
+                                            message = line,
+                                            lineNumber = lineNumber.toInt(),
+                                            columnNumber = columnNumber.toInt()
+                                        )
+                                    )
+                                }
                             }
                         }
                     }

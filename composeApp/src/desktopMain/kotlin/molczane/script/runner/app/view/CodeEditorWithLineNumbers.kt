@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
@@ -22,6 +23,16 @@ import molczane.script.runner.app.viewModel.ScriptViewModel
 @Composable
 fun CodeEditorWithLineNumbers(viewModel: ScriptViewModel) {
     var textFieldValue by remember { mutableStateOf(TextFieldValue(viewModel.scriptState.value.scriptText)) }
+
+//    val onNavigateToLine: (Int, Int) -> Unit = { line, column ->
+//        // Logic to navigate to the specified line and column
+//        // This could involve setting the cursor position in the `TextFieldValue`
+//        val textLines = textFieldValue.text.lines()
+//        if (line <= textLines.size) {
+//            val offset = textLines.take(line - 1).sumOf { it.length + 1 } + (column - 1)
+//            textFieldValue = textFieldValue.copy(selection = TextRange(offset, offset + 1))
+//        }
+//    }
 
     Row(modifier = Modifier.fillMaxWidth().background(Color.LightGray)) {
         // Line numbers column

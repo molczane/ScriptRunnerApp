@@ -104,42 +104,4 @@ class ScriptViewModel : ViewModel() {
             }
         }
     }
-
-
-//    fun runScript() {
-//        val scriptContent = scriptState.value.scriptText
-//        isRunning.value = true
-//        outputState.value = ""
-//
-//        CoroutineScope(Dispatchers.IO).launch {
-//            val tempFile = File.createTempFile("tempScript", ".kts")
-//            tempFile.writeText(scriptContent)
-//
-//            try {
-//                val process = ProcessBuilder("kotlinc", "-script", tempFile.absolutePath).start()
-//                val output = InputStreamReader(process.inputStream).readText()
-//                val errorOutput = InputStreamReader(process.errorStream).readText()
-//                val combinedOutput = if (errorOutput.isNotEmpty()) {
-//                    "$output\n$errorOutput"
-//                } else {
-//                    output
-//                }
-//                val code = process.waitFor()
-//
-//                withContext(Dispatchers.Main) {
-//                    outputState.value = combinedOutput
-//                    exitCode.value = code
-//                    isRunning.value = false
-//                }
-//            } catch (e: Exception) {
-//                withContext(Dispatchers.Main) {
-//                    outputState.value = "Error running script: ${e.message}"
-//                    exitCode.value = -1
-//                    isRunning.value = false
-//                }
-//            } finally {
-//                tempFile.delete()
-//            }
-//        }
-//    }
 }

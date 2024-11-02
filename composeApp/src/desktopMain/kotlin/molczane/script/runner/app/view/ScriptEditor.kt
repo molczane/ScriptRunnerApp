@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,9 +18,14 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import molczane.script.runner.app.utils.RunStopButton
+import molczane.script.runner.app.view.utils.RunStopButton
+import molczane.script.runner.app.view.codeEditor.CodeEditor
+import molczane.script.runner.app.view.codeEditor.LineNumberColumn
+import molczane.script.runner.app.view.outputPanel.OutputPanel
+import molczane.script.runner.app.view.outputPanel.StatusIndicator
 import molczane.script.runner.app.viewModel.ScriptViewModel
 
 @Composable
@@ -34,98 +41,123 @@ fun ScriptEditor(viewModel: ScriptViewModel) {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        // Top-center "Run Script" button
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-        ) {
-            RunStopButton(
-                isRunning = viewModel.isRunning.value,
-                onRunClick = { viewModel.runScript() },
-                onStopClick = { viewModel.stopScript() }
-            )
-        }
-
-        var columnHeight by remember { mutableStateOf(0) } // Store height in pixels
-
-        // Split the code editor and output panel vertically with a draggable handle
-        Box(
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(43, 45, 48)) // Set the background color for the whole application
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .onGloballyPositioned { coordinates ->
-                    columnHeight = coordinates.size.height
-                }
+                .padding(16.dp)
+                .background(Color.Transparent)
         ) {
-            Column {
-                val codeEditorScrollState = rememberScrollState(0)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(editorHeight)
-                        .background(Color.LightGray)
-                        .verticalScroll(codeEditorScrollState)
-                ) {
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        LineNumberColumn(text = textFieldValue.text)
-                        CodeEditor(
-                            textFieldValue = textFieldValue,
-                            onTextChange = {
-                                textFieldValue = it
-                                viewModel.updateScript(it.text)
-                            },
-                            viewModel = viewModel
-                        )
-                    }
-                    VerticalScrollbar(
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                            .height(editorHeight),
-                            //.fillMaxHeight(),
-                        adapter = rememberScrollbarAdapter(codeEditorScrollState)
+            TopAppBar(
+                title = {
+                    Text(
+                        "Script Runner App",
+                        fontFamily = FontFamily.Monospace,
+                        color = Color(200, 200, 200)
                     )
-                }
+                },
+                actions = {
+                    // Custom RunStopButton positioned in the top-right toolbar
+                    RunStopButton(
+                        isRunning = viewModel.isRunning.value,
+                        onRunClick = { viewModel.runScript() },
+                        onStopClick = { viewModel.stopScript() }
+                    )
+                },
+                backgroundColor = Color.Transparent,
+                elevation = 0.dp,
+                modifier = Modifier
+                    .padding(8.dp)
+            )
 
-                // Draggable handle for resizing the panels
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp)
-                        .background(Color.Gray)
-                        .pointerInput(Unit) {
-                            detectVerticalDragGestures { change, dragAmount ->
-                                val dragAmountDp = with(density) { dragAmount.toDp() }
-                                editorHeight = (editorHeight + dragAmountDp)//.coerceIn(100.dp, 600.dp)
-                                change.consume()
-                            }
-                        }
-                        .pointerHoverIcon(PointerIcon.Hand)
-                )
+            var columnHeight by remember { mutableStateOf(0) } // Store height in pixels
 
-                val outputPanelScrollState = rememberScrollState(0)
-
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .weight(1f)
-                    .background(Color.LightGray)
-                ) {
+            // Split the code editor and output panel vertically with a draggable handle
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .onGloballyPositioned { coordinates ->
+                        columnHeight = coordinates.size.height
+                    }
+            ) {
+                Column {
+                    val codeEditorScrollState = rememberScrollState(0)
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color.LightGray)
-                            .verticalScroll(outputPanelScrollState)
+                            .height(editorHeight)
+                            .background(Color(30, 31, 34))
+                            .verticalScroll(codeEditorScrollState)
                     ) {
-                        OutputPanel(viewModel = viewModel, onNavigateToLine = onNavigateToLine)
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                        ) {
+                            LineNumberColumn(text = textFieldValue.text)
+                            CodeEditor(
+                                textFieldValue = textFieldValue,
+                                onTextChange = {
+                                    textFieldValue = it
+                                    viewModel.updateScript(it.text)
+                                },
+                                viewModel = viewModel
+                            )
+                        }
+                        VerticalScrollbar(
+                            modifier = Modifier.align(Alignment.CenterEnd)
+                                .height(editorHeight),
+                            //.fillMaxHeight(),
+                            adapter = rememberScrollbarAdapter(codeEditorScrollState)
+                        )
                     }
+
+                    // Draggable handle for resizing the panels
                     Box(
                         modifier = Modifier
-                            .align(Alignment.TopEnd) // Aligns the inner Box to the top end
-                            .padding(8.dp) // Adds padding around the StatusIndicator
+                            .fillMaxWidth()
+                            .height(8.dp)
+                            .background(Color.Gray)
+                            .pointerInput(Unit) {
+                                detectVerticalDragGestures { change, dragAmount ->
+                                    val dragAmountDp = with(density) { dragAmount.toDp() }
+                                    editorHeight =
+                                        (editorHeight + dragAmountDp)//.coerceIn(100.dp, 600.dp)
+                                    change.consume()
+                                }
+                            }
+                            .pointerHoverIcon(PointerIcon.Hand)
+                    )
+
+                    val outputPanelScrollState = rememberScrollState(0)
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight()
+                            .weight(1f)
+                            .background(Color.Black)
                     ) {
-                        StatusIndicator(
-                            isRunning = viewModel.isRunning.value,
-                            exitCode = viewModel.exitCode.value,
-                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color.LightGray)
+                                .verticalScroll(outputPanelScrollState)
+                        ) {
+                            OutputPanel(viewModel = viewModel, onNavigateToLine = onNavigateToLine)
+                        }
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd) // Aligns the inner Box to the top end
+                                .padding(8.dp) // Adds padding around the StatusIndicator
+                        ) {
+                            StatusIndicator(
+                                isRunning = viewModel.isRunning.value,
+                                exitCode = viewModel.exitCode.value,
+                            )
+                        }
                     }
                 }
             }

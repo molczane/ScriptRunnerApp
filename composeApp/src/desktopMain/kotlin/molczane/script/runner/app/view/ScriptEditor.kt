@@ -5,8 +5,6 @@ import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,6 +14,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import molczane.script.runner.app.utils.RunStopButton
 import molczane.script.runner.app.viewModel.ScriptViewModel
 
 @Composable
@@ -37,14 +36,11 @@ fun ScriptEditor(viewModel: ScriptViewModel) {
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
         ) {
-            Button(
-                onClick = {
-                    viewModel.runScript()
-                },
-                enabled = !viewModel.isRunning.value,
-            ) {
-                Text("Run Script")
-            }
+            RunStopButton(
+                isRunning = viewModel.isRunning.value,
+                onRunClick = { viewModel.runScript() },
+                onStopClick = { viewModel.stopScript() }
+            )
         }
 
         // Split the code editor and output panel vertically with a draggable handle

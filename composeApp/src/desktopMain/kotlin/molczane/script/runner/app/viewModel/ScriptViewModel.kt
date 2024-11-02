@@ -99,7 +99,7 @@ class ScriptViewModel : ViewModel() {
                                 // Parse error output and store line/column
                                 val matchResult = errorPattern.find(line)
                                 if (matchResult != null) {
-                                    val (file, lineNumber, columnNumber, message) = matchResult.destructured
+                                    val (file, lineNumber, columnNumber, _) = matchResult.destructured
                                     errorList.add(
                                         ErrorData(
                                             message = String.format("%s:%s:%s", file, lineNumber, columnNumber),
@@ -135,4 +135,45 @@ class ScriptViewModel : ViewModel() {
             }
         }
     }
+
+    fun stopScript() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // Iterate over all running processes and terminate them
+                processList.forEach { process ->
+                    if (process.isAlive) {
+                        process.children().forEach { child ->
+                            if(child.isAlive) {
+                                child.destroyForcibly()
+                            }
+                        }
+                        process.destroy() // Attempt graceful termination
+
+                        // Wait for up to 5 seconds for the process to terminate
+                        if (!process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS)) {
+                            process.destroyForcibly() // Force termination if not stopped in 5 seconds
+                            println("Process forcibly terminated.")
+                        } else {
+                            println("Process terminated gracefully.")
+                        }
+                    }
+                }
+
+                // Clear the process list after stopping the processes
+                processList.clear()
+
+                // Update the state to indicate that the process is no longer running
+                withContext(Dispatchers.Main) {
+                    isRunning.value = false
+                    outputState.value += "\nScript execution stopped."
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    println("Error stopping the process: ${e.message}")
+                    outputState.value += "\nError stopping the script: ${e.message}"
+                }
+            }
+        }
+    }
+
 }

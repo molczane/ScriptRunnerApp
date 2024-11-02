@@ -1,16 +1,20 @@
 package molczane.script.runner.app.view
 
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -43,17 +47,24 @@ fun ScriptEditor(viewModel: ScriptViewModel) {
             )
         }
 
+        var columnHeight by remember { mutableStateOf(0) } // Store height in pixels
+
         // Split the code editor and output panel vertically with a draggable handle
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .onGloballyPositioned { coordinates ->
+                    columnHeight = coordinates.size.height
+                }
         ) {
             Column {
+                val codeEditorScrollState = rememberScrollState(0)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(editorHeight)
                         .background(Color.LightGray)
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(codeEditorScrollState)
                 ) {
                     Row(modifier = Modifier.fillMaxWidth()) {
                         LineNumberColumn(text = textFieldValue.text)
@@ -66,6 +77,12 @@ fun ScriptEditor(viewModel: ScriptViewModel) {
                             viewModel = viewModel
                         )
                     }
+                    VerticalScrollbar(
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                            .height(editorHeight),
+                            //.fillMaxHeight(),
+                        adapter = rememberScrollbarAdapter(codeEditorScrollState)
+                    )
                 }
 
                 // Draggable handle for resizing the panels
@@ -84,14 +101,32 @@ fun ScriptEditor(viewModel: ScriptViewModel) {
                         .pointerHoverIcon(PointerIcon.Hand)
                 )
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .background(Color.LightGray)
-                        .verticalScroll(rememberScrollState())
+                val outputPanelScrollState = rememberScrollState(0)
+
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .weight(1f)
+                    .background(Color.LightGray)
                 ) {
-                    OutputPanel(viewModel = viewModel, onNavigateToLine = onNavigateToLine)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.LightGray)
+                            .verticalScroll(outputPanelScrollState)
+                    ) {
+                        OutputPanel(viewModel = viewModel, onNavigateToLine = onNavigateToLine)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd) // Aligns the inner Box to the top end
+                            .padding(8.dp) // Adds padding around the StatusIndicator
+                    ) {
+                        StatusIndicator(
+                            isRunning = viewModel.isRunning.value,
+                            exitCode = viewModel.exitCode.value,
+                        )
+                    }
                 }
             }
         }

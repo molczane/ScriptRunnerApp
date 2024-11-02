@@ -8,6 +8,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
@@ -19,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun StatusIndicator(isRunning: Boolean, exitCode: Int?, modifier: Modifier) {
+fun StatusIndicator(isRunning: Boolean, exitCode: Int?) {
     val darkGreen = Color(red = 0, green = 100, blue = 20)
 
     // Determine the base color of the indicator
@@ -42,10 +43,11 @@ fun StatusIndicator(isRunning: Boolean, exitCode: Int?, modifier: Modifier) {
     // Box for the glowing indicator
     Box(
         modifier = Modifier
-            .size(16.dp) // Animate the size
+            .size(16.dp)
             .clip(CircleShape)
             .alpha(animatedAlpha) // Animate the opacity
             .background(color = indicatorColor)
-            .then(modifier),
+            .padding(16.dp)
+//            .then(modifier),
     )
 }

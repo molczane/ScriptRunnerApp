@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -18,7 +17,6 @@ fun OutputPanel(viewModel: ScriptViewModel, onNavigateToLine: (Int, Int) -> Unit
     Box(
             modifier = Modifier
                 .fillMaxWidth()
-                //.weight(1f)
                 .background(Color.LightGray)
                 .padding(8.dp)
         ) {
@@ -26,12 +24,6 @@ fun OutputPanel(viewModel: ScriptViewModel, onNavigateToLine: (Int, Int) -> Unit
             ErrorOutput(
                 errors = viewModel.errorList,
                 onNavigateToLine = onNavigateToLine
-            )
-            StatusIndicator(
-                isRunning = viewModel.isRunning.value,
-                exitCode = viewModel.exitCode.value,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
             )
             Text(
                 text = viewModel.outputState.value,

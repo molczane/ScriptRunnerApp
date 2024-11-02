@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,6 +20,8 @@ class ScriptViewModel : ViewModel() {
     var outputState = mutableStateOf("Output will appear here...")
     var isRunning = mutableStateOf(false)
     var exitCode = mutableStateOf<Int?>(null)
+    val processList = mutableListOf<Process>() // Store references to running processes
+    var fileToDestroy: File? = null
 
     // Lista słów kluczowych do wyróżnienia
     val keywords = setOf(
@@ -34,6 +37,12 @@ class ScriptViewModel : ViewModel() {
 
     private val keywordRegex = Regex("\\b(${keywords.joinToString("|")})\\b")
     private val errorPattern = Regex("""(\w+\.kts):(\d+):(\d+):\s+error:\s+(.+)""")
+
+    override fun onCleared() {
+        super.onCleared()
+        // Cancel any active coroutines or resources here
+        viewModelScope.cancel()
+    }
 
     fun updateScript(text: String) {
         scriptState.value = scriptState.value.copy(scriptText = text)
@@ -60,11 +69,14 @@ class ScriptViewModel : ViewModel() {
 
             //val tempFile = File.createTempFile("tempScript", ".kts")
             val tempFile = File("foo.kts")
+            fileToDestroy = tempFile
             tempFile.createNewFile()
             tempFile.writeText(scriptContent)
+            val processCommand = ProcessBuilder("kotlinc", "-script", tempFile.absolutePath)
 
             try {
-                val process = ProcessBuilder("kotlinc", "-script", tempFile.absolutePath).start()
+                val process = processCommand.start()
+                processList.add(process)
                 val outputReader = InputStreamReader(process.inputStream).buffered()
                 val errorReader = InputStreamReader(process.errorStream).buffered()
 
@@ -90,7 +102,7 @@ class ScriptViewModel : ViewModel() {
                                     val (file, lineNumber, columnNumber, message) = matchResult.destructured
                                     errorList.add(
                                         ErrorData(
-                                            message = line,
+                                            message = String.format("%s:%s:%s", file, lineNumber, columnNumber),
                                             lineNumber = lineNumber.toInt(),
                                             columnNumber = columnNumber.toInt()
                                         )

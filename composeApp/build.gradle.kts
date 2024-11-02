@@ -29,7 +29,6 @@ kotlin {
     }
 }
 
-
 compose.desktop {
     application {
         mainClass = "molczane.script.runner.app.MainKt"

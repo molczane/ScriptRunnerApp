@@ -1,4 +1,4 @@
-package molczane.script.runner.app.utils
+package molczane.script.runner.app.view.utils
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -25,6 +25,13 @@ import androidx.compose.ui.graphics.RectangleShape
 @Composable
 fun RunStopButton(isRunning: Boolean, onRunClick: () -> Unit, onStopClick: () -> Unit) {
     Button(
+        elevation = ButtonDefaults.elevation(
+            defaultElevation = 0.dp,
+            pressedElevation = 0.dp,
+            disabledElevation = 0.dp,
+            hoveredElevation = 0.dp,
+            focusedElevation = 0.dp
+        ),
         onClick = {
             if (isRunning) {
                 onStopClick()
@@ -33,12 +40,12 @@ fun RunStopButton(isRunning: Boolean, onRunClick: () -> Unit, onStopClick: () ->
             }
         },
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = Color.Gray // Change color based on `isRunning`
+            backgroundColor = Color.Transparent // Change color based on `isRunning`,
         ),
         modifier = Modifier
             .height(50.dp)
             .width(70.dp)
-            .background(Color.LightGray),
+            .background(Color.Transparent),
         content = {
             Box(
                 modifier = Modifier
@@ -75,13 +82,13 @@ fun DrawScope.drawPlayIcon() {
         close() // Close the path to complete the triangle
     }
     drawIntoCanvas { canvas ->
-        canvas.drawPath(path, Paint().apply { color = Color.Green })
+        canvas.drawPath(path, Paint().apply { color = Color(0, 200, 20) })
     }
 }
 
 fun DrawScope.drawStopIcon() {
     drawRoundRect(
-        color = Color.Red,
+        color = Color(200, 0, 0),
         size = Size(24.dp.toPx(), 24.dp.toPx()),
         // Use the full size of the canvas for the square
         cornerRadius = CornerRadius(size.minDimension * 0.1f) // Rounded corners, adjust 0.1f for radius size

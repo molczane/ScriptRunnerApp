@@ -1,4 +1,4 @@
-package molczane.script.runner.app.view
+package molczane.script.runner.app.view.outputPanel
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
@@ -27,7 +27,8 @@ fun StatusIndicator(isRunning: Boolean, exitCode: Int?) {
     val indicatorColor by animateColorAsState(
         targetValue = when {
             isRunning -> darkGreen // Green when running
-            exitCode != null && exitCode == 0 -> Color.Green // Green if completed successfully
+            !isRunning && exitCode != null && exitCode == 0 -> Color.Gray // Red if not running and non-zero exit code
+            !isRunning && exitCode == null -> Color.Gray // Gray when not running and no exit code
             else -> Color.Red // Red for non-zero exit code or when not running
         }
     )

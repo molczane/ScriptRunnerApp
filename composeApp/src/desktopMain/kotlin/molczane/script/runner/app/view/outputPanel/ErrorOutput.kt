@@ -1,4 +1,4 @@
-package molczane.script.runner.app.view
+package molczane.script.runner.app.view.outputPanel
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -24,7 +25,7 @@ fun ErrorOutput(errors: List<ErrorData>, onNavigateToLine: (Int, Int) -> Unit) {
         for (error in errors) {
             val annotatedString = buildAnnotatedString {
                 pushStringAnnotation(tag = "ERROR", annotation = "${error.lineNumber}:${error.columnNumber}")
-                withStyle(style = SpanStyle(color = Color.Red, textDecoration = TextDecoration.Underline)) {
+                withStyle(style = SpanStyle(color = Color(255, 0 ,0), textDecoration = TextDecoration.Underline)) {
                     append(error.message)
                 }
                 pop()
@@ -34,6 +35,7 @@ fun ErrorOutput(errors: List<ErrorData>, onNavigateToLine: (Int, Int) -> Unit) {
                 text = annotatedString,
                 fontSize = 14.sp,
                 color = Color.Red,
+                fontFamily = FontFamily.Monospace,
                 modifier = Modifier.clickable {
                     // Extract line and column from the annotation and navigate
                     val tag = annotatedString.getStringAnnotations("ERROR", 0, annotatedString.length).firstOrNull()

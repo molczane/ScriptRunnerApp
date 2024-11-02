@@ -165,6 +165,7 @@ class ScriptViewModel : ViewModel() {
                 // Update the state to indicate that the process is no longer running
                 withContext(Dispatchers.Main) {
                     isRunning.value = false
+                    exitCode.value = null
                     outputState.value += "\nScript execution stopped."
                 }
             } catch (e: Exception) {

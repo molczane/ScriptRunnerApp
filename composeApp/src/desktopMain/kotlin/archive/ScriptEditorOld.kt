@@ -1,4 +1,4 @@
-package molczane.script.runner.app.archive
+package archive
 
 //import LineNumberColumn
 //import androidx.compose.foundation.background

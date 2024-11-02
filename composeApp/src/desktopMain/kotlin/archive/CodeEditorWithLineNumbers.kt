@@ -1,4 +1,4 @@
-package molczane.script.runner.app.archive
+package archive
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

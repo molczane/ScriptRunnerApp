@@ -21,16 +21,15 @@ fun OutputPanel(viewModel: ScriptViewModel, onNavigateToLine: (Int, Int) -> Unit
                 .background(Color.Black)
                 .padding(8.dp)
         ) {
-            Text(
-                text = viewModel.outputState.value,
-                color = if (viewModel.exitCode.value == 0) Color.Black else Color.White,
-                fontSize = 14.sp,
-                fontFamily = FontFamily.Monospace
-            )
-            // Display error output
-            ErrorOutput(
-                errors = viewModel.errorList,
-                onNavigateToLine = onNavigateToLine
-            )
-        }
+        Text(
+            text = viewModel.outputState.value,
+            color = if (viewModel.exitCode.value == 0) Color.Black else Color.White,
+            fontSize = 14.sp,
+            fontFamily = FontFamily.Monospace
+        )
+        ErrorOutput(
+            errors = viewModel.errorList,
+            onNavigateToLine = onNavigateToLine
+        )
+    }
 }

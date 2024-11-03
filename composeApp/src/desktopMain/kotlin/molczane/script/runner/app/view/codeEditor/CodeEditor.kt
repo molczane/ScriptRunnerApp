@@ -47,7 +47,7 @@ fun CodeEditor(
                 .background(Color.Transparent),
             decorationBox = { innerTextField ->
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    val highlightedText = viewModel.highlightSyntax()
+                    val highlightedText = viewModel.highlightKotlinSyntax()
                     val annotatedString = buildAnnotatedString {
                         highlightedText.forEach { (word, isKeyword) ->
                             if (isKeyword) {

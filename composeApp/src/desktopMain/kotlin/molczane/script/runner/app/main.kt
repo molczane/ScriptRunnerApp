@@ -12,6 +12,7 @@ import javax.imageio.ImageIO
 fun main() = application {
     val viewModel = remember { ScriptViewModel() }
 
+    // To be deleted
     val iconStream = this::class.java.getResourceAsStream("/icons/AppIcon.icns")
     val iconImage: Image? = iconStream?.let { ImageIO.read(it) }
 

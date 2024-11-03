@@ -21,12 +21,12 @@ class ScriptViewModel : ViewModel() {
     var outputState = mutableStateOf("Output will appear here...")
     var isRunning = mutableStateOf(false)
     var exitCode = mutableStateOf<Int?>(null)
-    val processList = mutableListOf<Process>() // Store references to running processes
+    private val processList = mutableListOf<Process>() // Store references to running processes
     var fileToDestroy: File? = null
     var selectedScriptingLanguage = mutableStateOf(ScriptingLanguage.Kotlin)
 
     // Lista słów kluczowych do wyróżnienia
-    val keywords = setOf(
+    private val kotlinKeywords = setOf(
         "abstract", "annotation", "as", "break", "by", "catch", "class", "companion", "const",
         "constructor", "continue", "crossinline", "data", "delegate", "do", "else", "enum",
         "expect", "external", "false", "final", "finally", "for", "fun", "get", "if", "import",
@@ -37,8 +37,22 @@ class ScriptViewModel : ViewModel() {
         "where", "while"
     )
 
-    private val keywordRegex = Regex("\\b(${keywords.joinToString("|")})\\b")
-    private val errorPattern = Regex("""(\w+\.kts):(\d+):(\d+):\s+error:\s+(.+)""")
+    private val swiftKeywords = setOf(
+        "associatedtype", "class", "deinit", "enum", "extension", "func", "import", "init", "inout",
+        "let", "operator", "precedencegroup", "protocol", "struct", "subscript", "typealias", "var",
+        "break", "case", "continue", "default", "defer", "do", "else", "fallthrough", "for", "guard",
+        "if", "in", "repeat", "return", "switch", "where", "while", "as", "Any", "catch", "false",
+        "is", "nil", "rethrows", "super", "self", "Self", "throw", "throws", "true", "try", "__COLUMN__",
+        "__FILE__", "__FUNCTION__", "__LINE__"
+    )
+
+
+    private val kotlinKeywordRegex = Regex("\\b(${kotlinKeywords.joinToString("|")})\\b")
+    private val swiftKeywordRegex = Regex("\\b(${swiftKeywords.joinToString("|")})\\b")
+
+    private val kotlinErrorPattern = Regex("""(\w+\.kts):(\d+):(\d+):\s+error:\s+(.+)""")
+    private val swiftErrorPattern = Regex("""(\w+\.swift):(\d+):(\d+):\s+error:\s+(.+)""")
+
 
     override fun onCleared() {
         super.onCleared()
@@ -50,16 +64,28 @@ class ScriptViewModel : ViewModel() {
         scriptState.value = scriptState.value.copy(scriptText = text)
     }
 
-    fun highlightSyntax(): List<Pair<String, Boolean>> {
+    fun highlightKotlinSyntax(): List<Pair<String, Boolean>> {
         val words = scriptState.value.scriptText.split(Regex("(?=\\s)|(?<=\\s)"))
         return words.map { word ->
-            if (keywordRegex.matches(word.trim())) {
+            if (kotlinKeywordRegex.matches(word.trim())) {
                 word to true // True oznacza, że słowo jest słowem kluczowym
             } else {
                 word to false // False dla zwykłych słów
             }
         }
     }
+
+    fun highlightSwiftSyntax(): List<Pair<String, Boolean>> {
+        val words = scriptState.value.scriptText.split(Regex("(?=\\s)|(?<=\\s)"))
+        return words.map { word ->
+            if (swiftKeywordRegex.matches(word.trim())) {
+                word to true // True indicates the word is a keyword
+            } else {
+                word to false // False for regular words
+            }
+        }
+    }
+
 
     fun runScript() {
         val scriptContent = scriptState.value.scriptText
@@ -68,13 +94,26 @@ class ScriptViewModel : ViewModel() {
         errorList.clear() // List to store parsed errors
 
         viewModelScope.launch(Dispatchers.IO) {
+            var tempFile = File("foo")
+            var processCommand = ProcessBuilder("echo", "")
 
-            //val tempFile = File.createTempFile("tempScript", ".kts")
-            val tempFile = File("foo.kts")
+            when (selectedScriptingLanguage.value) {
+                ScriptingLanguage.Kotlin -> {
+                    tempFile = File("foo.kts")
+                    processCommand = ProcessBuilder("kotlinc", "-script", tempFile.absolutePath)
+                }
+
+                ScriptingLanguage.Swift -> {
+                    tempFile = File("foo.swift")
+                    processCommand = ProcessBuilder("/usr/bin/env", "swift", tempFile.absolutePath)
+                }
+            }
+
+            //val tempFile = File("foo.kts")
             fileToDestroy = tempFile
             tempFile.createNewFile()
             tempFile.writeText(scriptContent)
-            val processCommand = ProcessBuilder("kotlinc", "-script", tempFile.absolutePath)
+            //val processCommand = ProcessBuilder("kotlinc", "-script", tempFile.absolutePath)
 
             try {
                 val process = processCommand.start()
@@ -98,15 +137,44 @@ class ScriptViewModel : ViewModel() {
                             withContext(Dispatchers.Main) {
                                 outputState.value += "$line\n"
 
-                                // Parse error output and store line/column
-                                val matchResult = errorPattern.find(line)
+                                var matchResult : MatchResult? = null
+                                when (selectedScriptingLanguage.value) {
+                                    ScriptingLanguage.Kotlin -> matchResult = kotlinErrorPattern.find(line)
+                                    ScriptingLanguage.Swift -> matchResult = swiftErrorPattern.find(line)
+                                }
                                 if (matchResult != null) {
                                     val (file, lineNumber, columnNumber, _) = matchResult.destructured
+                                    when(selectedScriptingLanguage.value) {
+                                        ScriptingLanguage.Kotlin -> errorList.add(
+                                            ErrorData(
+                                                message = String.format(
+                                                    "%s:%s:%s",
+                                                    file,
+                                                    lineNumber,
+                                                    columnNumber,
+                                                ),
+                                                lineNumber = lineNumber.toInt(),
+                                                columnNumber = columnNumber.toInt(),
+                                                isClickable = true
+                                            )
+                                        )
+                                        ScriptingLanguage.Swift -> errorList.add(
+                                            ErrorData(
+                                                message = line,
+                                                lineNumber = lineNumber.toInt(),
+                                                columnNumber = columnNumber.toInt(),
+                                                isClickable = true
+                                            )
+                                        )
+                                    }
+                                }
+                                else {
                                     errorList.add(
                                         ErrorData(
-                                            message = String.format("%s:%s:%s", file, lineNumber, columnNumber),
-                                            lineNumber = lineNumber.toInt(),
-                                            columnNumber = columnNumber.toInt()
+                                            message = line,
+                                            lineNumber = 0,
+                                            columnNumber = 0,
+                                            isClickable = false
                                         )
                                     )
                                 }

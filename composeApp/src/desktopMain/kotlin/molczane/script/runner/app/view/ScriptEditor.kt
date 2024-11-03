@@ -27,6 +27,7 @@ import molczane.script.runner.app.view.codeEditor.LineNumberColumn
 import molczane.script.runner.app.view.outputPanel.OutputPanel
 import molczane.script.runner.app.view.outputPanel.StatusIndicator
 import molczane.script.runner.app.view.utils.LanguageSelector
+import molczane.script.runner.app.view.utils.addDarkGrayBorder
 import molczane.script.runner.app.viewModel.ScriptViewModel
 
 @Composable
@@ -97,7 +98,10 @@ fun ScriptEditor(viewModel: ScriptViewModel) {
                         columnHeight = coordinates.size.height
                     }
             ) {
-                Column {
+                Column (
+                    modifier = Modifier
+                        .addDarkGrayBorder()
+                ) {
                     val codeEditorScrollState = rememberScrollState(0)
                     Box(
                         modifier = Modifier
@@ -105,6 +109,7 @@ fun ScriptEditor(viewModel: ScriptViewModel) {
                             .height(editorHeight)
                             .background(Color(30, 31, 34))
                             .verticalScroll(codeEditorScrollState)
+                            .addDarkGrayBorder()
                     ) {
                         Row(modifier = Modifier
                             .fillMaxWidth()
@@ -142,6 +147,7 @@ fun ScriptEditor(viewModel: ScriptViewModel) {
                                 }
                             }
                             .pointerHoverIcon(PointerIcon.Hand)
+                            .addDarkGrayBorder()
                     )
 
                     val outputPanelScrollState = rememberScrollState(0)
@@ -152,6 +158,7 @@ fun ScriptEditor(viewModel: ScriptViewModel) {
                             .fillMaxHeight()
                             .weight(1f)
                             .background(Color.Black)
+                            .addDarkGrayBorder()
                     ) {
                         Box(
                             modifier = Modifier

@@ -26,7 +26,7 @@ fun StatusIndicator(isRunning: Boolean, exitCode: Int?) {
     // Determine the base color of the indicator
     val indicatorColor by animateColorAsState(
         targetValue = when {
-            isRunning -> darkGreen // Green when running
+            isRunning -> Color.Green // Green when running
             !isRunning && exitCode != null && exitCode == 0 -> Color.Gray // Red if not running and non-zero exit code
             !isRunning && exitCode == null -> Color.Gray // Gray when not running and no exit code
             else -> Color.Red // Red for non-zero exit code or when not running

@@ -10,6 +10,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import molczane.script.runner.app.model.ErrorData
+import molczane.script.runner.app.model.ScriptingLanguage
 import molczane.script.runner.app.model.ScriptState
 import java.io.File
 import java.io.InputStreamReader
@@ -22,6 +23,7 @@ class ScriptViewModel : ViewModel() {
     var exitCode = mutableStateOf<Int?>(null)
     val processList = mutableListOf<Process>() // Store references to running processes
     var fileToDestroy: File? = null
+    var selectedScriptingLanguage = mutableStateOf(ScriptingLanguage.Kotlin)
 
     // Lista słów kluczowych do wyróżnienia
     val keywords = setOf(

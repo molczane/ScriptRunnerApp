@@ -26,6 +26,7 @@ import molczane.script.runner.app.view.codeEditor.CodeEditor
 import molczane.script.runner.app.view.codeEditor.LineNumberColumn
 import molczane.script.runner.app.view.outputPanel.OutputPanel
 import molczane.script.runner.app.view.outputPanel.StatusIndicator
+import molczane.script.runner.app.view.utils.LanguageSelector
 import molczane.script.runner.app.viewModel.ScriptViewModel
 
 @Composable
@@ -61,6 +62,18 @@ fun ScriptEditor(viewModel: ScriptViewModel) {
                     )
                 },
                 actions = {
+                    // Language selector at the top
+                    LanguageSelector(
+                        selectedScriptingLanguage = viewModel.selectedScriptingLanguage.value,
+                        onLanguageChange = { language ->
+                            viewModel.selectedScriptingLanguage.value = language
+                            // Add logic to switch scripting behavior based on the language if needed
+                        }
+                    )
+
+                    // Spacer to add some space between the LanguageSelector and RunStopButton
+                    Spacer(modifier = Modifier.width(8.dp))
+
                     // Custom RunStopButton positioned in the top-right toolbar
                     RunStopButton(
                         isRunning = viewModel.isRunning.value,

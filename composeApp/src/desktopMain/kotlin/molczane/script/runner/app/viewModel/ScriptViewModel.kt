@@ -12,8 +12,12 @@ import kotlinx.coroutines.withContext
 import molczane.script.runner.app.model.ErrorData
 import molczane.script.runner.app.utils.ScriptingLanguage
 import molczane.script.runner.app.model.ScriptState
+import molczane.script.runner.app.service.KotlinScriptExecutor
+import molczane.script.runner.app.service.ScriptExecutor
+import molczane.script.runner.app.service.ScriptRunner
+import molczane.script.runner.app.service.SwiftScriptExecutor
 import java.io.File
-import java.io.InputStreamReader
+import java.util.concurrent.TimeUnit
 
 class ScriptViewModel : ViewModel() {
     val errorList = mutableStateListOf<ErrorData>()
@@ -24,6 +28,15 @@ class ScriptViewModel : ViewModel() {
     private val processList = mutableListOf<Process>() // Store references to running processes
     var fileToDestroy: File? = null
     var selectedScriptingLanguage = mutableStateOf(ScriptingLanguage.Kotlin)
+
+    private val executorMap: Map<ScriptingLanguage, ScriptExecutor> = mapOf(
+        ScriptingLanguage.Kotlin to KotlinScriptExecutor(),
+        ScriptingLanguage.Swift to SwiftScriptExecutor()
+    )
+
+    private val scriptRunner = ScriptRunner(
+        executorMap = executorMap
+    )
 
     // Lista słów kluczowych do wyróżnienia
     private val kotlinKeywords = setOf(
@@ -88,108 +101,26 @@ class ScriptViewModel : ViewModel() {
 
 
     fun runScript() {
-        val scriptContent = scriptState.value.scriptText
         isRunning.value = true
         outputState.value = ""
-        errorList.clear() // List to store parsed errors
+        errorList.clear()
 
         viewModelScope.launch(Dispatchers.IO) {
-            var tempFile = File("foo")
-            var processCommand = ProcessBuilder("echo", "")
-
-            when (selectedScriptingLanguage.value) {
-                ScriptingLanguage.Kotlin -> {
-                    tempFile = File("foo.kts")
-                    processCommand = ProcessBuilder("kotlinc", "-script", tempFile.absolutePath)
-                }
-
-                ScriptingLanguage.Swift -> {
-                    tempFile = File("foo.swift")
-                    processCommand = ProcessBuilder("/usr/bin/env", "swift", tempFile.absolutePath)
-                }
-            }
-
-            fileToDestroy = tempFile
-            tempFile.createNewFile()
-            tempFile.writeText(scriptContent)
-
             try {
-                val process = processCommand.start()
-                processList.add(process)
-                val outputReader = InputStreamReader(process.inputStream).buffered()
-                val errorReader = InputStreamReader(process.errorStream).buffered()
-
-                // Run both output and error reading within a coroutine scope
-                coroutineScope {
-                    val jobOutput = launch {
-                        outputReader.lineSequence().forEach { line ->
-                            // Update the state directly without switching context for smoother output handling
-                            withContext(Dispatchers.Main) {
-                                outputState.value += "$line\n"
-                                println("Reading output line: $line") // Debug line in jobOutput coroutine
-                            }
+                val code = scriptRunner.runScript(
+                    scriptContent = scriptState.value.scriptText,
+                    language = selectedScriptingLanguage.value,
+                    outputCallback = { line ->
+                        viewModelScope.launch(Dispatchers.IO) {
+                            outputState.value += "$line\n"
+                        }
+                    },
+                    errorCallback = { line ->
+                        viewModelScope.launch(Dispatchers.IO) {
+                            parseAndAddError(line)
                         }
                     }
-
-                    val jobError = launch {
-                        errorReader.lineSequence().forEach { line ->
-                            withContext(Dispatchers.Main) {
-                                outputState.value += "$line\n"
-
-                                var matchResult : MatchResult? = null
-                                when (selectedScriptingLanguage.value) {
-                                    ScriptingLanguage.Kotlin -> matchResult = kotlinErrorPattern.find(line)
-                                    ScriptingLanguage.Swift -> matchResult = swiftErrorPattern.find(line)
-                                }
-                                if (matchResult != null) {
-                                    val (file, lineNumber, columnNumber, _) = matchResult.destructured
-                                    when(selectedScriptingLanguage.value) {
-                                        ScriptingLanguage.Kotlin -> errorList.add(
-                                            ErrorData(
-                                                message = String.format(
-                                                    "%s:%s:%s",
-                                                    file,
-                                                    lineNumber,
-                                                    columnNumber,
-                                                ),
-                                                lineNumber = lineNumber.toInt(),
-                                                columnNumber = columnNumber.toInt(),
-                                                isClickable = true
-                                            )
-                                        )
-                                        ScriptingLanguage.Swift -> errorList.add(
-                                            ErrorData(
-                                                message = line,
-                                                lineNumber = lineNumber.toInt(),
-                                                columnNumber = columnNumber.toInt(),
-                                                isClickable = true
-                                            )
-                                        )
-                                    }
-                                    println("Reading error line: $line") // Debug line in jobError coroutine
-                                }
-                                else {
-                                    errorList.add(
-                                        ErrorData(
-                                            message = line,
-                                            lineNumber = 0,
-                                            columnNumber = 0,
-                                            isClickable = false
-                                        )
-                                    )
-                                }
-                                //println("Error list size: ${errorList.size}")
-                            }
-                        }
-                    }
-
-                    // Wait for the jobs to finish
-                    jobOutput.join()
-                    jobError.join()
-                }
-
-                // Wait for the process to complete and the coroutines to finish reading
-                val code = process.waitFor()
+                )
 
                 withContext(Dispatchers.Main) {
                     exitCode.value = code
@@ -201,51 +132,158 @@ class ScriptViewModel : ViewModel() {
                     exitCode.value = -1
                     isRunning.value = false
                 }
-            } finally {
-                tempFile.delete()
             }
         }
     }
+
+    private fun parseAndAddError(line: String) {
+        val matchResult = when (selectedScriptingLanguage.value) {
+            ScriptingLanguage.Kotlin -> kotlinErrorPattern.find(line)
+            ScriptingLanguage.Swift -> swiftErrorPattern.find(line)
+        }
+
+        matchResult?.let {
+            val (_, lineNumber, columnNumber, _) = it.destructured
+            errorList.add(
+                ErrorData(
+                    message = line,
+                    lineNumber = lineNumber.toInt(),
+                    columnNumber = columnNumber.toInt(),
+                    isClickable = true
+                )
+            )
+        } ?: run {
+            errorList.add(
+                ErrorData(
+                    message = line,
+                    lineNumber = 0,
+                    columnNumber = 0,
+                    isClickable = false
+                )
+            )
+        }
+    }
+
+//    fun runScript() {
+//        val scriptContent = scriptState.value.scriptText
+//        isRunning.value = true
+//        outputState.value = ""
+//        errorList.clear() // List to store parsed errors
+//
+//        viewModelScope.launch(Dispatchers.IO) {
+//
+//            val executor = executorMap[selectedScriptingLanguage.value] ?: run {
+//                println("No executor found for the selected scripting language.")
+//                return@launch // or return Unit if necessary
+//            }
+//
+//            val tempFile = executor.prepareScriptFile(scriptState.value.scriptText)
+//            val processCommand = executor.getProcessBuilder(tempFile)
+//
+//            fileToDestroy = tempFile
+//            tempFile.createNewFile()
+//            tempFile.writeText(scriptContent)
+//
+//            try {
+//                val process = processCommand.start()
+//                processList.add(process)
+//                val outputReader = InputStreamReader(process.inputStream).buffered()
+//                val errorReader = InputStreamReader(process.errorStream).buffered()
+//
+//                // Run both output and error reading within a coroutine scope
+//                coroutineScope {
+//                    val jobOutput = launch {
+//                        outputReader.lineSequence().forEach { line ->
+//                            // Update the state directly without switching context for smoother output handling
+//                            withContext(Dispatchers.Main) {
+//                                outputState.value += "$line\n"
+//                                println("Reading output line: $line") // Debug line in jobOutput coroutine
+//                            }
+//                        }
+//                    }
+//
+//                    val jobError = launch {
+//                        errorReader.lineSequence().forEach { line ->
+//                            withContext(Dispatchers.Main) {
+//                                outputState.value += "$line\n"
+//
+//                                var matchResult : MatchResult? = null
+//                                when (selectedScriptingLanguage.value) {
+//                                    ScriptingLanguage.Kotlin -> matchResult = kotlinErrorPattern.find(line)
+//                                    ScriptingLanguage.Swift -> matchResult = swiftErrorPattern.find(line)
+//                                }
+//                                if (matchResult != null) {
+//                                    val (file, lineNumber, columnNumber, _) = matchResult.destructured
+//                                    when(selectedScriptingLanguage.value) {
+//                                        ScriptingLanguage.Kotlin -> errorList.add(
+//                                            ErrorData(
+//                                                message = String.format(
+//                                                    "%s:%s:%s",
+//                                                    file,
+//                                                    lineNumber,
+//                                                    columnNumber,
+//                                                ),
+//                                                lineNumber = lineNumber.toInt(),
+//                                                columnNumber = columnNumber.toInt(),
+//                                                isClickable = true
+//                                            )
+//                                        )
+//                                        ScriptingLanguage.Swift -> errorList.add(
+//                                            ErrorData(
+//                                                message = line,
+//                                                lineNumber = lineNumber.toInt(),
+//                                                columnNumber = columnNumber.toInt(),
+//                                                isClickable = true
+//                                            )
+//                                        )
+//                                    }
+//                                    println("Reading error line: $line") // Debug line in jobError coroutine
+//                                }
+//                                else {
+//                                    errorList.add(
+//                                        ErrorData(
+//                                            message = line,
+//                                            lineNumber = 0,
+//                                            columnNumber = 0,
+//                                            isClickable = false
+//                                        )
+//                                    )
+//                                }
+//                                //println("Error list size: ${errorList.size}")
+//                            }
+//                        }
+//                    }
+//
+//                    // Wait for the jobs to finish
+//                    jobOutput.join()
+//                    jobError.join()
+//                }
+//
+//                // Wait for the process to complete and the coroutines to finish reading
+//                val code = process.waitFor()
+//
+//                withContext(Dispatchers.Main) {
+//                    exitCode.value = code
+//                    isRunning.value = false
+//                }
+//            } catch (e: Exception) {
+//                withContext(Dispatchers.Main) {
+//                    outputState.value = "Error running script: ${e.message}"
+//                    exitCode.value = -1
+//                    isRunning.value = false
+//                }
+//            } finally {
+//                tempFile.delete()
+//            }
+//        }
+//    }
 
     fun stopScript() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                // Iterate over all running processes and terminate them
-                processList.forEach { process ->
-                    if (process.isAlive) {
-                        process.children().forEach { child ->
-                            if(child.isAlive) {
-                                child.destroyForcibly()
-                            }
-                        }
-                        process.destroy() // Attempt graceful termination
-
-                        // Wait for up to 5 seconds for the process to terminate
-                        if (!process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS)) {
-                            process.destroyForcibly() // Force termination if not stopped in 5 seconds
-                            println("Process forcibly terminated.")
-                        } else {
-                            println("Process terminated gracefully.")
-                        }
-                    }
-                }
-
-                // Clear the process list after stopping the processes
-                processList.clear()
-
-                // Update the state to indicate that the process is no longer running
-                withContext(Dispatchers.Main) {
-                    isRunning.value = false
-                    exitCode.value = null
-                    outputState.value += "\nScript execution stopped."
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    println("Error stopping the process: ${e.message}")
-                    outputState.value += "\nError stopping the script: ${e.message}"
-                }
-            }
+        viewModelScope.launch {
+            scriptRunner.stopScript()
+            isRunning.value = false
+            exitCode.value = null
+            outputState.value += "\nScript execution stopped."
         }
     }
-
 }

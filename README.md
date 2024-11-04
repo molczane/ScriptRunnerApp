@@ -1,6 +1,6 @@
-Test task goal:
+I copied task deskroption here, so I'll attach a picture/description to every point mentioned.
 
-Develop a GUI tool that allows users to enter a script, execute it, and see its output side-by-side.
+# Develop a GUI tool that allows users to enter a script, execute it, and see its output side-by-side. 
 
 You may choose between Swift and Kotlin as supported scripting languages. You are free to use any modern mainstream programming language you are comfortable with for the implementation. (The reviewers will be most familiar with Swift, Kotlin and Java.) The solution should be a link to a git repository or Zip archive. Please provide instructions to build and run your tool from the provided sources and other necessary information in a README file.
 Screen shots or a recording are appreciated, especially if your project will not run on macOS.

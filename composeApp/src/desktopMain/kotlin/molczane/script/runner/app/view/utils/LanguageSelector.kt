@@ -11,7 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import molczane.script.runner.app.model.ScriptingLanguage
+import molczane.script.runner.app.utils.ScriptingLanguage
 
 @Composable
 fun LanguageSelector(

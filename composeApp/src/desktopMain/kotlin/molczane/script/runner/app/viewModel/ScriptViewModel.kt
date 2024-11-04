@@ -10,7 +10,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import molczane.script.runner.app.model.ErrorData
-import molczane.script.runner.app.model.ScriptingLanguage
+import molczane.script.runner.app.utils.ScriptingLanguage
 import molczane.script.runner.app.model.ScriptState
 import java.io.File
 import java.io.InputStreamReader
@@ -109,11 +109,9 @@ class ScriptViewModel : ViewModel() {
                 }
             }
 
-            //val tempFile = File("foo.kts")
             fileToDestroy = tempFile
             tempFile.createNewFile()
             tempFile.writeText(scriptContent)
-            //val processCommand = ProcessBuilder("kotlinc", "-script", tempFile.absolutePath)
 
             try {
                 val process = processCommand.start()
@@ -128,6 +126,7 @@ class ScriptViewModel : ViewModel() {
                             // Update the state directly without switching context for smoother output handling
                             withContext(Dispatchers.Main) {
                                 outputState.value += "$line\n"
+                                println("Reading output line: $line") // Debug line in jobOutput coroutine
                             }
                         }
                     }
@@ -167,6 +166,7 @@ class ScriptViewModel : ViewModel() {
                                             )
                                         )
                                     }
+                                    println("Reading error line: $line") // Debug line in jobError coroutine
                                 }
                                 else {
                                     errorList.add(
@@ -178,6 +178,7 @@ class ScriptViewModel : ViewModel() {
                                         )
                                     )
                                 }
+                                //println("Error list size: ${errorList.size}")
                             }
                         }
                     }

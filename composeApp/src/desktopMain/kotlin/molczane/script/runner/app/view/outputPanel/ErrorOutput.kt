@@ -23,8 +23,8 @@ fun ErrorOutput(errors: List<ErrorData>, onNavigateToLine: (Int, Int) -> Unit) {
             .height(100.dp)
     ) {
         for (error in errors) {
-            if(error.isClickable) {
-                val annotatedString = buildAnnotatedString {
+            val annotatedString = buildAnnotatedString {
+                if (error.isClickable) {
                     pushStringAnnotation(
                         tag = "ERROR",
                         annotation = "${error.lineNumber}:${error.columnNumber}"
@@ -38,33 +38,87 @@ fun ErrorOutput(errors: List<ErrorData>, onNavigateToLine: (Int, Int) -> Unit) {
                         append(error.message)
                     }
                     pop()
+                } else {
+                    append(error.message)
                 }
+            }
 
-                Text(
-                    text = annotatedString,
-                    fontSize = 14.sp,
-                    color = Color.Red,
-                    fontFamily = FontFamily.Monospace,
-                    modifier = Modifier.clickable {
-                        // Extract line and column from the annotation and navigate
-                        val tag =
-                            annotatedString.getStringAnnotations("ERROR", 0, annotatedString.length)
-                                .firstOrNull()
+            Text(
+                text = annotatedString,
+                fontSize = 14.sp,
+                color = if (error.isClickable) Color.Red else Color.Transparent,
+                fontFamily = FontFamily.Monospace,
+                modifier = if (error.isClickable) {
+                    Modifier.clickable {
+                        val tag = annotatedString.getStringAnnotations(
+                            tag = "ERROR",
+                            start = 0,
+                            end = annotatedString.length
+                        ).firstOrNull()
+
                         tag?.let {
                             val (line, column) = it.item.split(":").map { num -> num.toInt() }
                             onNavigateToLine(line, column)
                         }
                     }
-                )
-            }
-            else {
-                Text(
-                    text = error.message,
-                    fontSize = 14.sp,
-                    color = Color.Transparent,
-                    fontFamily = FontFamily.Monospace
-                )
-            }
+                } else {
+                    Modifier
+                }
+            )
         }
     }
 }
+
+
+//@Composable
+//fun ErrorOutput(errors: List<ErrorData>, onNavigateToLine: (Int, Int) -> Unit) {
+//    Column(
+//        modifier = Modifier
+//            .height(100.dp)
+//    ) {
+//        for (error in errors) {
+//            if(error.isClickable) {
+//                val annotatedString = buildAnnotatedString {
+//                    pushStringAnnotation(
+//                        tag = "ERROR",
+//                        annotation = "${error.lineNumber}:${error.columnNumber}"
+//                    )
+//                    withStyle(
+//                        style = SpanStyle(
+//                            color = Color(255, 0, 0),
+//                            textDecoration = TextDecoration.Underline
+//                        )
+//                    ) {
+//                        append(error.message)
+//                    }
+//                    pop()
+//                }
+//
+//                Text(
+//                    text = annotatedString,
+//                    fontSize = 14.sp,
+//                    color = Color.Red,
+//                    fontFamily = FontFamily.Monospace,
+//                    modifier = Modifier.clickable {
+//                        // Extract line and column from the annotation and navigate
+//                        val tag =
+//                            annotatedString.getStringAnnotations("ERROR", 0, annotatedString.length)
+//                                .firstOrNull()
+//                        tag?.let {
+//                            val (line, column) = it.item.split(":").map { num -> num.toInt() }
+//                            onNavigateToLine(line, column)
+//                        }
+//                    }
+//                )
+//            }
+//            else {
+//                Text(
+//                    text = error.message,
+//                    fontSize = 14.sp,
+//                    color = Color.Transparent,
+//                    fontFamily = FontFamily.Monospace
+//                )
+//            }
+//        }
+//    }
+//}

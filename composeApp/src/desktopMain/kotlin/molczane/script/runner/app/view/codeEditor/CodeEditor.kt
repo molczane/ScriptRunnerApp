@@ -15,6 +15,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import molczane.script.runner.app.utils.ScriptingLanguage
 import molczane.script.runner.app.viewModel.ScriptViewModel
 import molczane.script.runner.app.view.utils.JetBrainsMonoFontFamily
 
@@ -47,7 +48,16 @@ fun CodeEditor(
                 .background(Color.Transparent),
             decorationBox = { innerTextField ->
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    val highlightedText = viewModel.highlightKotlinSyntax()
+                    val highlightedText = when (viewModel.selectedScriptingLanguage.value) {
+                        ScriptingLanguage.Kotlin -> {
+                            viewModel.highlightKotlinSyntax()
+                        }
+
+                        ScriptingLanguage.Swift -> {
+                            viewModel.highlightSwiftSyntax()
+                        }
+                    }
+                    //val highlightedText = viewModel.highlightKotlinSyntax()
                     val annotatedString = buildAnnotatedString {
                         highlightedText.forEach { (word, isKeyword) ->
                             if (isKeyword) {

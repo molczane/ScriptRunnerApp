@@ -1,4 +1,4 @@
-package molczane.script.runner.app.model
+package molczane.script.runner.app.utils
 
 enum class ScriptingLanguage {
     Swift,

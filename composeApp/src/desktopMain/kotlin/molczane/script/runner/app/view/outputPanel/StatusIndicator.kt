@@ -21,8 +21,6 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun StatusIndicator(isRunning: Boolean, exitCode: Int?) {
-    val darkGreen = Color(red = 0, green = 100, blue = 20)
-
     // Determine the base color of the indicator
     val indicatorColor by animateColorAsState(
         targetValue = when {

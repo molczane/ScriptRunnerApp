@@ -12,6 +12,8 @@ import kotlinx.coroutines.withContext
 import molczane.script.runner.app.model.ErrorData
 import molczane.script.runner.app.utils.ScriptingLanguage
 import molczane.script.runner.app.model.ScriptState
+import molczane.script.runner.app.service.KotlinScriptExecutor
+import molczane.script.runner.app.service.SwiftScriptExecutor
 import java.io.File
 import java.io.InputStreamReader
 
@@ -24,6 +26,11 @@ class ScriptViewModel : ViewModel() {
     private val processList = mutableListOf<Process>() // Store references to running processes
     var fileToDestroy: File? = null
     var selectedScriptingLanguage = mutableStateOf(ScriptingLanguage.Kotlin)
+
+    private val executorMap = mapOf(
+        ScriptingLanguage.Kotlin to KotlinScriptExecutor(),
+        ScriptingLanguage.Swift to SwiftScriptExecutor()
+    )
 
     // Lista słów kluczowych do wyróżnienia
     private val kotlinKeywords = setOf(
@@ -94,20 +101,9 @@ class ScriptViewModel : ViewModel() {
         errorList.clear() // List to store parsed errors
 
         viewModelScope.launch(Dispatchers.IO) {
-            var tempFile = File("foo")
-            var processCommand = ProcessBuilder("echo", "")
-
-            when (selectedScriptingLanguage.value) {
-                ScriptingLanguage.Kotlin -> {
-                    tempFile = File("foo.kts")
-                    processCommand = ProcessBuilder("kotlinc", "-script", tempFile.absolutePath)
-                }
-
-                ScriptingLanguage.Swift -> {
-                    tempFile = File("foo.swift")
-                    processCommand = ProcessBuilder("/usr/bin/env", "swift", tempFile.absolutePath)
-                }
-            }
+            val executor = executorMap[selectedScriptingLanguage.value] ?: return@launch
+            val tempFile = executor.prepareScriptFile(scriptState.value.scriptText)
+            val processCommand = executor.getProcessBuilder(tempFile)
 
             fileToDestroy = tempFile
             tempFile.createNewFile()

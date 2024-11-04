@@ -86,7 +86,7 @@ As it's shown on video:
 * I implemented draggable panel to adjust code editor and output panel sizes,
 * I have option to chose between Kotlin and Swift as scripting languages,
 * Depending on chosen language, syntax highlighting is adjusted.
-* Code editor is showing lines dynamically.
+* Code editor is showing line numbers dynamically.
 
 # Architecture
 

@@ -39,10 +39,6 @@ class ScriptViewModel : ViewModel() {
         ScriptingLanguage.Swift to SwiftSyntaxHighlighter()
     )
 
-    private val kotlinErrorPattern = Regex("""(\w+\.kts):(\d+):(\d+):\s+error:\s+(.+)""")
-    private val swiftErrorPattern = Regex("""(\w+\.swift):(\d+):(\d+):\s+error:\s+(.+)""")
-
-
     override fun onCleared() {
         super.onCleared()
         // Cancel any active coroutines or resources here
@@ -97,11 +93,10 @@ class ScriptViewModel : ViewModel() {
                             withContext(Dispatchers.Main) {
                                 outputState.value += "$line\n"
 
-                                var matchResult : MatchResult? = null
-                                when (selectedScriptingLanguage.value) {
-                                    ScriptingLanguage.Kotlin -> matchResult = kotlinErrorPattern.find(line)
-                                    ScriptingLanguage.Swift -> matchResult = swiftErrorPattern.find(line)
-                                }
+                                val highlighter = syntaxHighlighterMap[selectedScriptingLanguage.value]
+
+                                val matchResult = highlighter?.errorPattern?.find(line)
+
                                 if (matchResult != null) {
                                     val (file, lineNumber, columnNumber, _) = matchResult.destructured
                                     when(selectedScriptingLanguage.value) {

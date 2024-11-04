@@ -10,12 +10,12 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import molczane.script.runner.app.model.ErrorData
-import molczane.script.runner.app.utils.ScriptingLanguage
+import molczane.script.runner.app.utils.syntax.ScriptingLanguage
 import molczane.script.runner.app.model.ScriptState
 import molczane.script.runner.app.service.KotlinScriptExecutor
 import molczane.script.runner.app.service.SwiftScriptExecutor
-import molczane.script.runner.app.utils.KotlinSyntaxHighlighter
-import molczane.script.runner.app.utils.SwiftSyntaxHighlighter
+import molczane.script.runner.app.utils.syntax.KotlinSyntaxHighlighter
+import molczane.script.runner.app.utils.syntax.SwiftSyntaxHighlighter
 import java.io.File
 import java.io.InputStreamReader
 
@@ -53,6 +53,12 @@ class ScriptViewModel : ViewModel() {
         val highlighter = syntaxHighlighterMap[selectedScriptingLanguage.value]
 
         return highlighter?.highlight(scriptState.value.scriptText) ?: emptyList()
+    }
+
+    fun highlightLineSyntax(text: String) : List<Pair<String, Boolean>> {
+        val highlighter = syntaxHighlighterMap[selectedScriptingLanguage.value]
+
+        return highlighter?.highlight(text) ?: emptyList()
     }
 
     fun runScript() {

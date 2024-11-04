@@ -8,6 +8,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -24,16 +25,10 @@ fun CodeEditor(
     onTextChange: (TextFieldValue) -> Unit,
     viewModel: ScriptViewModel
 ) {
-    val cursorPosition = textFieldValue.selection.start
     val textLines = textFieldValue.text.split("\n")
 
     // Determine the current line index based on the cursor position
-    val currentLineIndex = textLines.foldIndexed(0) { index, acc, line ->
-        if (acc + line.length + 1 > cursorPosition) {
-            return@foldIndexed index
-        }
-        acc + line.length + 1
-    }
+
 
     Box(modifier = Modifier
         .fillMaxWidth()) {
@@ -45,18 +40,11 @@ fun CodeEditor(
                 .fillMaxWidth()
                 .padding(16.dp)
                 .background(Color.Transparent),
+            cursorBrush = SolidColor(Color.White),
             decorationBox = { innerTextField ->
                 Box(modifier = Modifier.fillMaxWidth()) {
-//                    val highlightedText = when (viewModel.selectedScriptingLanguage.value) {
-//                        ScriptingLanguage.Kotlin -> {
-//                            viewModel.highlightKotlinSyntax()
-//                        }
-//
-//                        ScriptingLanguage.Swift -> {
-//                            viewModel.highlightSwiftSyntax()
-//                        }
-//                    }
                     val highlightedText = viewModel.highlightSyntax()
+
                     val annotatedString = buildAnnotatedString {
                         highlightedText.forEach { (word, isKeyword) ->
                             if (isKeyword) {
@@ -64,7 +52,7 @@ fun CodeEditor(
                                     append(word)
                                 }
                             } else {
-                                withStyle(style = SpanStyle(color = Color(141, 142, 147))) {
+                                withStyle(style = SpanStyle(color = Color(200, 200, 200))) {
                                     append(word)
                                 }
                             }
@@ -77,7 +65,8 @@ fun CodeEditor(
                             value = textFieldValue.copy(annotatedString = annotatedString),
                             onValueChange = onTextChange,
                             textStyle = TextStyle(fontSize = 16.sp, fontFamily = JetBrainsMonoFontFamily()),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            cursorBrush = SolidColor(Color.White),
                         )
                     }
                 }

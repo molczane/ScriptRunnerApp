@@ -1,4 +1,4 @@
-package molczane.script.runner.app.utils
+package molczane.script.runner.app.utils.syntax
 
 class KotlinSyntaxHighlighter : SyntaxHighlighter {
     override fun highlight(text: String): List<Pair<String, Boolean>> {

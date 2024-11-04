@@ -1,4 +1,4 @@
-package molczane.script.runner.app.utils
+package molczane.script.runner.app.utils.syntax
 
 interface SyntaxHighlighter {
     fun highlight(text: String): List<Pair<String, Boolean>>

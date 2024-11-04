@@ -39,16 +39,42 @@ It's taken into account. User Can also stop script from executing using red squa
 
 <img width="1468" alt="Zrzut ekranu 2024-11-4 o 23 01 38" src="https://github.com/user-attachments/assets/1b10bc77-e100-437c-9764-31dd5f1603bf">
 
+- Show live output of the script as it executes.
+
+It works, I tested my app on fibanacci numbers generating script.
+
 https://github.com/user-attachments/assets/d01adb0b-2ef1-4c15-95d0-497b3e9470f2
 
-Show live output of the script as it executes. - Show errors from the execution/if the script couldn’t be interpreted.
-Show an indication whether the script is currently running.
-- Show an indication whether the exit code of the last run was non-zero.
-  Implement at least one of the following:
+- Show errors from the execution/if the script couldn’t be interpreted.
 
-Highlight language keywords in a color different from the rest of the code. You may assume that keywords are not valid in other contexts, e.g. as enum member names. You may restrict yourself to 10 keywords, if more could be added easily.
+It's working. In this video example, I changed scripting language to Swift while having Kotlin code. Errors were shown.
+
+https://github.com/user-attachments/assets/70ff0cbe-bef8-4ee0-8c14-09a61ae52200
+
+- Show an indication whether the script is currently running.
+
+I created little pulsing dot, that is indicating whether script is running. It was visible on previous videos.
+
+<img width="1468" alt="Zrzut ekranu 2024-11-4 o 23 10 10" src="https://github.com/user-attachments/assets/861a0f26-f283-4826-8307-86eb9ee230c9">
+
+- Show an indication whether the exit code of the last run was non-zero.
+
+If the exit code of the last run was non-zero, pulsing dot is becoming red.
+
+<img width="1470" alt="Zrzut ekranu 2024-11-4 o 23 11 50" src="https://github.com/user-attachments/assets/5087248a-3514-4a46-aa07-c22d966c33d8">
+
+# Implement at least one of the following:
+
+1. Highlight language keywords in a color different from the rest of the code. You may assume that keywords are not valid in other contexts, e.g. as enum member names. You may restrict yourself to 10 keywords, if more could be added easily.
+
+Language keyword are highlighted in blue, as was visible in the previous pictures.
+
 Make location descriptions of errors (e.g. “script:2:1: error: cannot find 'foo' in scope”) clickable, so users can navigate to the exact cursor positions in code.
 We're not looking for a standard solution. Feel free to make it unique by focusing on areas you care about.
 
-Alternative
-If you lack the time for this task, you may provide us with an existing project with similar complexity and focus area or link to non-trivial contributions in open-source projects.
+I had problem implementing that. Because, list of errors is creating properly. I want to make every first line of error clickable. But for some reason only very first line is clickable. I show it on video.
+
+https://github.com/user-attachments/assets/270074c3-6f4f-40ef-aa92-9aee2225ca6b
+
+So as shown on video, this functionality works. But not entirely well. I suppose it's some Compose Multiplatform related problem. But I've run out of time to degub this issue.
+

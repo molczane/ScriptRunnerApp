@@ -27,6 +27,5 @@ class KotlinSyntaxHighlighter : SyntaxHighlighter {
     override val keywordRegex: Regex
         get() = Regex("\\b(${keywords.joinToString("|")})\\b")
 
-    override val errorPattern: Regex
-        get() = Regex("""(\w+\.kts):(\d+):(\d+):\s+error:\s+(.+)""")
+    override val errorPattern = Regex("""(\w+\.kts):(\d+):(\d+):\s+error:\s+(.+)""")
 }

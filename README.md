@@ -108,6 +108,10 @@ As told before, I had problems with making all errors I wanted clickable. Beside
 * Refactoring. I tried to improve code readability to teh last moment. But I wanted to write comprehensive README, so it may be lacking readability sometimes.
 * And many more, which will probably be spotted by the reviewer.
 
-I developed this app in Android Studio. 
+# How to run?
+
+I developed this app in Android Studio, so it's the best to just clone repository in Android Studio, let Gradle take care of dependencies and write **./gradlew run** in terminal.
+
+# Last remarks
 
 That was very fun project to do. No matter the results, I appreciate the task.

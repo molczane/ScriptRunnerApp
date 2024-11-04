@@ -78,3 +78,36 @@ https://github.com/user-attachments/assets/270074c3-6f4f-40ef-aa92-9aee2225ca6b
 
 So as shown on video, this functionality works. But not entirely well. I suppose it's some Compose Multiplatform related problem. But I've run out of time to degub this issue.
 
+# Full showcase of my application - video.
+
+https://github.com/user-attachments/assets/aa2c85e2-dc67-41a3-81ec-daa22e3a4f75
+
+As it's shown on video:
+* I implemented draggable panel to adjust code editor and output panel sizes,
+* I have option to chose between Kotlin and Swift as scripting languages,
+* Depending on chosen language, syntax highlighting is adjusted.
+* Code editor is showing lines dynamically.
+
+# Architecture
+
+For this project, I've decided to go with MVVM architecture. I tried to preserve its principles. 
+
+So, all view related Composables are kept in view folder. 
+
+I have one ViewModel class, but I've created service and utils folders to keep ViewModel's helper classes. 
+
+Model directiry with definitions of used data.
+
+Whole application structure should be readable through its structure, I believe it's easy to tell what which class does.
+
+# Problems during implementation
+
+As told before, I had problems with making all errors I wanted clickable. Beside this:
+* Closing all app related processes after exit. It worked at some point of development, but it was during "spaghetti code" stage. When I tried to refactor, during last hours of deadline, I did something bad with couroutines and there is sometimes some process left after application quit. I've run out of time to fix this issue, that's why I am mentioning it here.
+* I tried to highlight line where I am currently coding, but didn't manage to do it. It was hard getting it done with Compose framework (still love it).
+* Refactoring. I tried to improve code readability to teh last moment. But I wanted to write comprehensive README, so it may be lacking readability sometimes.
+* And many more, which will probably be spotted by the reviewer.
+
+I developed this app in Android Studio. 
+
+That was very fun project to do. No matter the results, I appreciate the task.

@@ -20,7 +20,7 @@ For project implementation I've chosen Kotlin Multiplatform technology with Comp
 
 4. The solution should be a link to a git repository or Zip archive. Please provide instructions to build and run your tool from the provided sources and other necessary information in a README file. Screen shots or a recording are appreciated, especially if your project will not run on macOS.
 
-It is.
+It is. Run instruction in the end of README file.
 
 ## Required functionality: 
 - Should have an editor pane and an output pane.

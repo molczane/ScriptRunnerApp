@@ -14,6 +14,8 @@ import molczane.script.runner.app.utils.ScriptingLanguage
 import molczane.script.runner.app.model.ScriptState
 import molczane.script.runner.app.service.KotlinScriptExecutor
 import molczane.script.runner.app.service.SwiftScriptExecutor
+import molczane.script.runner.app.utils.KotlinSyntaxHighlighter
+import molczane.script.runner.app.utils.SwiftSyntaxHighlighter
 import java.io.File
 import java.io.InputStreamReader
 
@@ -32,30 +34,10 @@ class ScriptViewModel : ViewModel() {
         ScriptingLanguage.Swift to SwiftScriptExecutor()
     )
 
-    // Lista słów kluczowych do wyróżnienia
-    private val kotlinKeywords = setOf(
-        "abstract", "annotation", "as", "break", "by", "catch", "class", "companion", "const",
-        "constructor", "continue", "crossinline", "data", "delegate", "do", "else", "enum",
-        "expect", "external", "false", "final", "finally", "for", "fun", "get", "if", "import",
-        "in", "infix", "init", "inline", "inner", "interface", "internal", "is", "it", "lateinit",
-        "noinline", "null", "object", "open", "operator", "out", "override", "package", "private",
-        "protected", "public", "reified", "return", "sealed", "set", "super", "suspend", "tailrec",
-        "this", "throw", "true", "try", "typealias", "typeof", "val", "var", "vararg", "when",
-        "where", "while"
+    private val syntaxHighlighterMap = mapOf(
+        ScriptingLanguage.Kotlin to KotlinSyntaxHighlighter(),
+        ScriptingLanguage.Swift to SwiftSyntaxHighlighter()
     )
-
-    private val swiftKeywords = setOf(
-        "associatedtype", "class", "deinit", "enum", "extension", "func", "import", "init", "inout",
-        "let", "operator", "precedencegroup", "protocol", "struct", "subscript", "typealias", "var",
-        "break", "case", "continue", "default", "defer", "do", "else", "fallthrough", "for", "guard",
-        "if", "in", "repeat", "return", "switch", "where", "while", "as", "Any", "catch", "false",
-        "is", "nil", "rethrows", "super", "self", "Self", "throw", "throws", "true", "try", "__COLUMN__",
-        "__FILE__", "__FUNCTION__", "__LINE__"
-    )
-
-
-    private val kotlinKeywordRegex = Regex("\\b(${kotlinKeywords.joinToString("|")})\\b")
-    private val swiftKeywordRegex = Regex("\\b(${swiftKeywords.joinToString("|")})\\b")
 
     private val kotlinErrorPattern = Regex("""(\w+\.kts):(\d+):(\d+):\s+error:\s+(.+)""")
     private val swiftErrorPattern = Regex("""(\w+\.swift):(\d+):(\d+):\s+error:\s+(.+)""")
@@ -71,28 +53,11 @@ class ScriptViewModel : ViewModel() {
         scriptState.value = scriptState.value.copy(scriptText = text)
     }
 
-    fun highlightKotlinSyntax(): List<Pair<String, Boolean>> {
-        val words = scriptState.value.scriptText.split(Regex("(?=\\s)|(?<=\\s)"))
-        return words.map { word ->
-            if (kotlinKeywordRegex.matches(word.trim())) {
-                word to true // True oznacza, że słowo jest słowem kluczowym
-            } else {
-                word to false // False dla zwykłych słów
-            }
-        }
-    }
+    fun highlightSyntax() : List<Pair<String, Boolean>> {
+        val highlighter = syntaxHighlighterMap[selectedScriptingLanguage.value]
 
-    fun highlightSwiftSyntax(): List<Pair<String, Boolean>> {
-        val words = scriptState.value.scriptText.split(Regex("(?=\\s)|(?<=\\s)"))
-        return words.map { word ->
-            if (swiftKeywordRegex.matches(word.trim())) {
-                word to true // True indicates the word is a keyword
-            } else {
-                word to false // False for regular words
-            }
-        }
+        return highlighter?.highlight(scriptState.value.scriptText) ?: emptyList()
     }
-
 
     fun runScript() {
         val scriptContent = scriptState.value.scriptText
